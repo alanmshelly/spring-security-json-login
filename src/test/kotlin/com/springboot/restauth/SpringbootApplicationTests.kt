@@ -13,6 +13,7 @@ import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.http.HttpStatus.*
 import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.util.LinkedMultiValueMap
 
 
@@ -27,8 +28,7 @@ class SpringbootApplicationTests {
 
 
         assertThat(responseEntity.statusCode).isEqualTo(OK)
-        assertThat(responseEntity.headers.getFirst(SET_COOKIE))
-                .containsPattern("^JSESSIONID=\\w+;")
+        assertThat(getCookie(responseEntity)).containsPattern("^JSESSIONID=\\w+;")
     }
 
     @Test
@@ -37,7 +37,7 @@ class SpringbootApplicationTests {
 
 
         assertThat(responseEntity.statusCode).isEqualTo(UNAUTHORIZED)
-        assertThat(responseEntity.headers.getFirst(SET_COOKIE)).isNull()
+        assertThat(getCookie(responseEntity)).isNull()
     }
 
     @Test
@@ -52,7 +52,7 @@ class SpringbootApplicationTests {
     fun `api endpoint returns OK and body when logged in`() {
         val loginResponseEntity = restTemplate.exchange("/api/login", POST, correctLoginCredentialsEntity(), Unit.javaClass)
         val headers = HttpHeaders()
-        headers.add("Cookie", loginResponseEntity.headers.getFirst(SET_COOKIE))
+        headers.add("Cookie", getCookie(loginResponseEntity))
 
 
         val responseEntity = restTemplate.exchange("/api/hello", GET, HttpEntity(null, headers), String::class.java)
@@ -91,4 +91,6 @@ class SpringbootApplicationTests {
 
         return HttpEntity(credentials, headers)
     }
+
+    private fun getCookie(responseEntity: ResponseEntity<Unit>) = responseEntity.headers.getFirst(SET_COOKIE)
 }
