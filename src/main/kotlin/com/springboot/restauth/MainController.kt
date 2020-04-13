@@ -9,26 +9,16 @@ class MainController {
     fun index(): String {
         return """
             <html><body>
+                <div>Hello Page!</div>
                 <form action="/api/login" method="post">
                     <div><input name="username" value="hoge"></div>
                     <div><input name="password" value="foobar"></div>
                     <div><input type="submit"></div>
                  </form>
-                 
-                 
-                 <div><a href="/authenticated">authenticated page</a></div>
+                <a href="/logout">logout</a>
+
                  <div><a href="/api/hello">api endpoint</a></div>
              </body></html>
-        """.trimIndent()
-    }
-
-    @GetMapping("/authenticated")
-    fun authenticated(): String {
-        return """
-            <html><body>
-                <div>Hello HTML!</div>
-                <a href="/logout">logout</a>
-            </body></html>
         """.trimIndent()
     }
 
