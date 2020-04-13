@@ -15,7 +15,7 @@ class MainController {
                     <div><input name="password" value="foobar"></div>
                     <div><input type="submit"></div>
                  </form>
-                <a href="/logout">logout</a>
+                <a href="/api/logout">logout</a>
 
                  <div><a href="/api/hello">api endpoint</a></div>
              </body></html>
