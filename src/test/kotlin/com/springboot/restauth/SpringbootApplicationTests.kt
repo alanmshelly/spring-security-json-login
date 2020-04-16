@@ -1,6 +1,7 @@
 package com.springboot.restauth
 
 import org.assertj.core.api.Assertions.assertThat
+import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -14,7 +15,6 @@ import org.springframework.http.HttpMethod.POST
 import org.springframework.http.HttpStatus.*
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
-import org.springframework.util.LinkedMultiValueMap
 
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -51,15 +51,31 @@ class SpringbootApplicationTests {
     @Test
     fun `api endpoint returns OK and body when logged in`() {
         val loginResponseEntity = restTemplate.exchange("/api/login", POST, correctLoginCredentialsEntity(), Unit.javaClass)
+
+
         val headers = HttpHeaders()
         headers.add("Cookie", getCookie(loginResponseEntity))
-
-
         val responseEntity = restTemplate.exchange("/api/hello", GET, HttpEntity(null, headers), String::class.java)
 
 
         assertThat(responseEntity.statusCode).isEqualTo(OK)
         assertThat(responseEntity.body).isEqualTo("Hello API!")
+    }
+
+    @Test
+    fun `logout prevents access to authenticated endpoints`() {
+        val loginResponseEntity = restTemplate.exchange("/api/login", POST, correctLoginCredentialsEntity(), Unit.javaClass)
+        val headers = HttpHeaders()
+        headers.add("Cookie", getCookie(loginResponseEntity))
+        val httpEntity = HttpEntity(null, headers)
+
+        val logoutResponseEntity = restTemplate.postForEntity("/api/logout", httpEntity, Unit.javaClass)
+        val responseEntity = restTemplate.exchange("/api/hello", GET, httpEntity, String::class.java)
+
+
+        assertThat(logoutResponseEntity.statusCode).isEqualTo(OK)
+        assertThat(responseEntity.statusCode).isEqualTo(FORBIDDEN)
+        assertThat(responseEntity.body).isNullOrEmpty()
     }
 
     @Test
@@ -70,24 +86,28 @@ class SpringbootApplicationTests {
         assertThat(responseEntity.body).isNullOrEmpty()
     }
 
-    private fun correctLoginCredentialsEntity(): HttpEntity<LinkedMultiValueMap<String, String>> {
+    private fun correctLoginCredentialsEntity(): HttpEntity<String> {
         val headers = HttpHeaders()
-        headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
+        headers.contentType = MediaType.APPLICATION_JSON
 
-        val credentials = LinkedMultiValueMap<String, String>()
-        credentials.set("username", "hoge")
-        credentials.set("password", "foobar")
+        @Language("JSON")
+        val credentials = """{
+          "username": "hoge",
+          "password": "foobar"
+        }""".trimIndent()
 
         return HttpEntity(credentials, headers)
     }
 
-    private fun incorrectLoginCredentialsEntity(): HttpEntity<LinkedMultiValueMap<String, String>> {
+    private fun incorrectLoginCredentialsEntity(): HttpEntity<String> {
         val headers = HttpHeaders()
-        headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
+        headers.contentType = MediaType.APPLICATION_JSON
 
-        val credentials = LinkedMultiValueMap<String, String>()
-        credentials.set("username", "hoge")
-        credentials.set("password", "wrongpassword")
+        @Language("JSON")
+        val credentials = """{
+          "username": "hoge",
+          "password": "wrongpassword"
+        }""".trimIndent()
 
         return HttpEntity(credentials, headers)
     }
