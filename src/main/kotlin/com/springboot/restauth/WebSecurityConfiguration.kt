@@ -4,11 +4,11 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
+
 
 @Configuration
 class WebSecurityConfig : WebSecurityConfigurerAdapter() {
@@ -21,7 +21,11 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
                  * You can either redirect for react page requests here or in the react router.
                  * If serving the react files from Spring, you need to allow everything in the react build.
                  */
-                .antMatchers(HttpMethod.POST, "/api/login", "/api/logout")
+                .antMatchers(
+                        HttpMethod.POST,
+                        "/api/login",
+                        "/api/logout"
+                )
                 .permitAll()
                 .antMatchers(
                         "/api/**"
@@ -38,13 +42,6 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
                         response.sendRedirect("/")
                     }
                 }
-    }
-
-    override fun configure(auth: AuthenticationManagerBuilder) {
-        auth.inMemoryAuthentication()
-                .withUser("hoge")
-                .password(passwordEncoder().encode("foobar"))
-                .roles("USER")
     }
 
     @Bean
