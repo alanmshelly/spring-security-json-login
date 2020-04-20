@@ -2,6 +2,9 @@ package com.springboot.restauth
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
+import org.springframework.http.server.ServletServerHttpResponse
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.AuthenticationException
@@ -26,12 +29,17 @@ class CustomAuthenticationFilter : UsernamePasswordAuthenticationFilter() {
     }
 
     override fun successfulAuthentication(
-            req: HttpServletRequest?,
-            res: HttpServletResponse?,
-            chain: FilterChain?,
-            auth: Authentication?
+            request: HttpServletRequest,
+            response: HttpServletResponse,
+            chain: FilterChain,
+            authentication: Authentication
     ) {
-        SecurityContextHolder.getContext().authentication = auth
+        SecurityContextHolder.getContext().authentication = authentication
+        MappingJackson2HttpMessageConverter().write(
+                authentication,
+                MediaType.APPLICATION_JSON,
+                ServletServerHttpResponse(response)
+        )
     }
 
     override fun unsuccessfulAuthentication(request: HttpServletRequest, response: HttpServletResponse, failed: AuthenticationException) {
