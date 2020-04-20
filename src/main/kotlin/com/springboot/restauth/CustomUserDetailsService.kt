@@ -25,8 +25,9 @@ class CustomUserDetailsService(
 
     private fun encodePassword(password: String): String = passwordEncoder.encode(password)
 
-    override fun loadUserByUsername(username: String?): UserDetails {
-        return users.find { userDetails -> userDetails.username == username }
+    override fun loadUserByUsername(username: String): UserDetails {
+        val user = users.find { userDetails -> userDetails.username == username }
+        return user
                 ?: throw UsernameNotFoundException("User '${username}' not found")
     }
 }

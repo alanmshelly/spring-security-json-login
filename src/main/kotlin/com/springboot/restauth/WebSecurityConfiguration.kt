@@ -1,18 +1,32 @@
 package com.springboot.restauth
 
-import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
+import org.springframework.security.authentication.AuthenticationProvider
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
-import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher
 
 
 @Configuration
-class WebSecurityConfig : WebSecurityConfigurerAdapter() {
+class WebSecurityConfig(
+        private val authenticationProvider: AuthenticationProvider
+) : WebSecurityConfigurerAdapter() {
     override fun configure(http: HttpSecurity) {
+        val filter = CustomAuthenticationFilter()
+        filter.setRequiresAuthenticationRequestMatcher(
+                AntPathRequestMatcher("/api/login", "POST"))
+        filter.setAuthenticationManager(authenticationManagerBean())
+        http.addFilter(filter)
+
+        http.logout()
+                .logoutUrl("/api/logout")
+                .logoutSuccessHandler { _, response, _ ->
+                    response.status = HttpStatus.OK.value()
+                }
+                .permitAll()
+
         http.csrf()
                 .disable()
 
@@ -21,12 +35,6 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
                  * You can either redirect for react page requests here or in the react router.
                  * If serving the react files from Spring, you need to allow everything in the react build.
                  */
-                .antMatchers(
-                        HttpMethod.POST,
-                        "/api/login",
-                        "/api/logout"
-                )
-                .permitAll()
                 .antMatchers(
                         "/api/**"
                 )
@@ -44,8 +52,7 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
                 }
     }
 
-    @Bean
-    fun passwordEncoder(): PasswordEncoder {
-        return BCryptPasswordEncoder()
+    override fun configure(auth: AuthenticationManagerBuilder) {
+        auth.authenticationProvider(authenticationProvider)
     }
 }
