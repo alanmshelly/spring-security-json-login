@@ -20,7 +20,9 @@
     </div>
     <div><input type="submit"></div>
 </form>
-<a href="/api/logout">logout</a>
+<button id="logoutButton">
+    logout
+</button>
 
 <div><a href="/api/hello">api endpoint</a></div>
 
@@ -38,6 +40,16 @@
                     password: document.getElementsByName("password")[0].value,
                 })
             })
+                .then(() => window.location.reload())
+        })
+
+    document.getElementById("logoutButton")
+        .addEventListener("click", () => {
+            fetch("/api/logout", {
+                credentials: "include",
+                method: "POST"
+            })
+                .then(() => window.location.reload())
         })
 </script>
 </body>
