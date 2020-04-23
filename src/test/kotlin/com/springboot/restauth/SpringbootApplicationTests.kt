@@ -1,5 +1,6 @@
 package com.springboot.restauth
 
+import com.fasterxml.jackson.databind.json.JsonMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.Test
@@ -16,16 +17,19 @@ import org.springframework.http.HttpStatus.*
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 
-
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 class SpringbootApplicationTests {
     @Autowired
     private lateinit var restTemplate: TestRestTemplate
 
     @Test
-    fun `login with correct credentials returns 200 and sets session cookie`() {
-        val responseEntity = restTemplate.exchange("/api/login", POST, correctLoginCredentialsEntity(), Unit.javaClass)
+    fun `login with correct credentials returns 200, auth object and sets session cookie`() {
+        val responseEntity = restTemplate.exchange("/api/login", POST, correctLoginCredentialsEntity(), String()::class.java)
 
+        val jsonResponseBody = JsonMapper().readTree(responseEntity.body)
+        assertThat(jsonResponseBody["principal"].textValue()).isEqualTo("hoge")
+        assertThat(jsonResponseBody["credentials"].textValue()).isNull()
+        assertThat(jsonResponseBody["authorities"][0]["authority"].textValue()).isEqualTo("ROLE_USER")
 
         assertThat(responseEntity.statusCode).isEqualTo(OK)
         assertThat(getCookie(responseEntity)).containsPattern("^JSESSIONID=\\w+;")
@@ -112,5 +116,5 @@ class SpringbootApplicationTests {
         return HttpEntity(credentials, headers)
     }
 
-    private fun getCookie(responseEntity: ResponseEntity<Unit>) = responseEntity.headers.getFirst(SET_COOKIE)
+    private fun <T> getCookie(responseEntity: ResponseEntity<T>): String? = responseEntity.headers.getFirst(SET_COOKIE)
 }
