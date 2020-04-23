@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div>Hello Page!</div>
+<p th:text="${principal}"></p>
+<form id="loginForm">
+    <div>
+        <label>username:
+            <input name="username" value="hoge">
+        </label>
+    </div>
+    <div>
+        <label>password:
+            <input name="password" value="foobar">
+        </label>
+    </div>
+    <div><input type="submit"></div>
+</form>
+<a href="/api/logout">logout</a>
+
+<div><a href="/api/hello">api endpoint</a></div>
+
+<script>
+    document.getElementById("loginForm")
+        .addEventListener("submit", (event) => {
+            event.preventDefault()
+            fetch("/api/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    username: document.getElementsByName("username")[0].value,
+                    password: document.getElementsByName("password")[0].value,
+                })
+            })
+        })
+</script>
+</body>
+</html>

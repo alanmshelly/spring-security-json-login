@@ -2,24 +2,17 @@ package com.springboot.restauth
 
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.servlet.ModelAndView
+import java.security.Principal
+
 
 @RestController
 class MainController {
     @GetMapping("/")
-    fun index(): String {
-        return """
-            <html><body>
-                <div>Hello Page!</div>
-                <form action="/api/login" method="post">
-                    <div><input name="username" value="hoge"></div>
-                    <div><input name="password" value="foobar"></div>
-                    <div><input type="submit"></div>
-                 </form>
-                <a href="/api/logout">logout</a>
-
-                 <div><a href="/api/hello">api endpoint</a></div>
-             </body></html>
-        """.trimIndent()
+    fun index(principal: Principal?): ModelAndView {
+        val mav = ModelAndView("top")
+        mav.addObject("principal", principal?.name)
+        return mav
     }
 
     @GetMapping("/api/hello")
